@@ -1,10 +1,10 @@
 :root{--w:#FFFFFF;--k:#171717;--r:#D92D25;--pad:clamp(16px,3vw,40px);--d:'Anton','Teko',Impact,'Arial Narrow',sans-serif;--t:'Teko','Arial Narrow',sans-serif;--ease:cubic-bezier(.2,.8,.2,1)}
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;user-select: none;-webkit-user-select: none;}
 html{overflow-x:clip;scroll-behavior:smooth;scroll-padding-top:70px}
 body{background:var(--w);color:var(--k);font-family:var(--t);font-weight:500;font-size:1.3rem;line-height:1.1;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 :focus-visible{outline:3px solid var(--r);outline-offset:3px}
-::selection{background:var(--r);color:var(--w)}
+::-webkit-scrollbar{width:12px}::-webkit-scrollbar-track{background:#FFF;border-left:3px solid #171717}::-webkit-scrollbar-thumb{background:#D92D25;border:2px solid #171717}::-webkit-scrollbar-thumb:hover{background:#171717}html{scrollbar-width:thin;scrollbar-color:#D92D25 #FFF}
 .grain{position:fixed;inset:0;z-index:50;pointer-events:none;opacity:.07;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E")}
 
 /* barra */
@@ -93,8 +93,6 @@ a{color:inherit;text-decoration:none}
 .vota-small{font:700 clamp(1.6rem,3vw,2.6rem)/1 var(--t);text-transform:uppercase;color:var(--w)}
 .vota-big{grid-column:1/-1;display:flex;flex-direction:column;font:400 clamp(4rem,17vw,19rem)/.86 var(--d);text-transform:uppercase}
 .vota-big span:first-child{color:var(--w)}
-.vota-big span:last-child{transition:letter-spacing .5s var(--ease)}
-.vota-big:hover span:last-child{letter-spacing:.03em}
 footer{display:grid;grid-template-columns:1fr auto auto;gap:20px var(--pad);align-items:center;padding:24px var(--pad);border-top:4px solid var(--k);text-transform:uppercase;font-weight:700;font-size:1.3rem}
 .f-school{display:flex;flex-direction:column}
 .f-school span{color:var(--r)}
