@@ -77,6 +77,8 @@ python3 tools/ootb_publisher_gui.py
 ```
 Apre nel browser (solo sul tuo dispositivo, 127.0.0.1) un editor con barra degli strumenti (titoli, grassetto, corsivo, elenchi, citazioni, link, immagini, codice), anteprima in tempo reale, upload di immagini (`docs/images/`) e file (`docs/files/`), bozza automatica e pubblicazione con un clic. Il token GitHub si inserisce nella pagina e non viene salvato. Serve `ootb_publisher.py` nella stessa cartella.
 
+**Eliminare un contenuto:** scheda *Elimina* (o voce 4 nella versione da terminale). Scegli il tipo e l'ID, verifica l'elenco di ciò che verrà rimosso (voce nel JSON, pagina generata, markdown e, se vuoi, immagini e file allegati non usati da altri contenuti) e conferma riscrivendo l'ID. Resta recuperabile dalla cronologia di git.
+
 ### Versione da terminale (`tools/ootb_publisher.py`)
 Programma Python (solo libreria standard, nessun git) per creare articoli, comunicazioni ed eventi del calendario da qualsiasi dispositivo:
 ```

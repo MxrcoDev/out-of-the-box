@@ -102,9 +102,12 @@ class GitHub:
         return base64.b64decode(b["content"]).decode("utf-8")
 
     def commit(self, parent_sha, base_tree, changes, message):
-        """changes: {path: bytes}. Un solo commit, aggiornamento non forzato del branch."""
+        """changes: {path: bytes | None}. bytes = crea/aggiorna, None = elimina. Un solo commit, branch aggiornato senza force."""
         entries = []
         for path, content in changes.items():
+            if content is None:
+                entries.append({"path": path, "mode": "100644", "type": "blob", "sha": None})
+                continue
             blob = self.call("POST", "/git/blobs", {"content": base64.b64encode(content).decode(), "encoding": "base64"})
             entries.append({"path": path, "mode": "100644", "type": "blob", "sha": blob["sha"]})
         tree = self.call("POST", "/git/trees", {"base_tree": base_tree, "tree": entries})
@@ -216,6 +219,92 @@ def dump_json(data):
     return (json.dumps(data, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
 
 
+SAFE_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+IMG_REF_RE = re.compile(r"\(\s*docs/images/([^)\s\"]+)")
+
+
+def md_name_of(entry):
+    name = str(entry.get("content", "")).strip().replace("\\", "/")
+    name = re.sub(r"^\.?/", "", name)
+    name = name[len(MD_DIR):] if name.startswith(MD_DIR) else name
+    return name if SAFE_NAME_RE.match(name) else None
+
+
+def list_items(gh, files):
+    """Elenco di ciò che esiste: {kind: [{id,title,date}]} per articoli, comunicazioni ed eventi."""
+    out = {}
+    for kind, cfg in KINDS.items():
+        out[kind] = [{"id": e.get("id"), "title": e.get("title"), "date": e.get("date")}
+                     for e in load_json_list(gh, files, cfg["json"]) if isinstance(e, dict)]
+    out["evento"] = [{"id": str(e.get("id")), "title": e.get("title"), "date": e.get("date")}
+                     for e in load_json_list(gh, files, EVENTS_JSON) if isinstance(e, dict)]
+    return out
+
+
+def plan_delete(gh, files, kind, eid, with_assets=False):
+    """Prepara l'eliminazione di un contenuto per id. Ritorna (changes, deleted_paths, titolo).
+    changes: {path: bytes|None}. Non tocca nulla finché non si fa il commit."""
+    if kind == "evento":
+        entries = load_json_list(gh, files, EVENTS_JSON)
+        keep = [e for e in entries if not (isinstance(e, dict) and str(e.get("id")) == eid)]
+        if len(keep) == len(entries):
+            raise Abort(f"Nessun evento con ID «{eid}»")
+        title = next(e.get("title") for e in entries if isinstance(e, dict) and str(e.get("id")) == eid)
+        return {EVENTS_JSON: dump_json(keep)}, [], title
+    if kind not in KINDS:
+        raise Abort("Tipo di contenuto non valido")
+
+    cfg = KINDS[kind]
+    entries = load_json_list(gh, files, cfg["json"])
+    target = next((e for e in entries if isinstance(e, dict) and e.get("id") == eid), None)
+    if target is None:
+        raise Abort(f"Nessun {kind} con ID «{eid}»")
+    if not ID_RE.match(eid):
+        raise Abort("ID non valido")
+    keep = [e for e in entries if e is not target]
+    changes, deleted = {cfg["json"]: dump_json(keep)}, []
+
+    # tutto ciò che è ancora usato dagli ALTRI contenuti (di entrambi i tipi) non va toccato
+    others = list(keep)
+    for k2, c2 in KINDS.items():
+        if k2 != kind:
+            others += [e for e in load_json_list(gh, files, c2["json"]) if isinstance(e, dict)]
+    used_md = {md_name_of(e) for e in others if isinstance(e, dict)}
+    used_files, used_imgs = set(), set()
+    for e in others:
+        if not isinstance(e, dict):
+            continue
+        for l in e.get("links") or []:
+            if isinstance(l, dict) and l.get("type") == "download":
+                used_files.add(str(l.get("uri", "")).replace(FILES_DIR, "", 1))
+        m = md_name_of(e)
+        if m and MD_DIR + m in files:
+            used_imgs.update(IMG_REF_RE.findall(gh.read_text(files[MD_DIR + m])))
+
+    page = cfg["page"].format(id=eid)
+    if page in files:
+        changes[page] = None
+        deleted.append(page)
+    md = md_name_of(target)
+    if md and MD_DIR + md in files and md not in used_md:
+        if with_assets:
+            for img in IMG_REF_RE.findall(gh.read_text(files[MD_DIR + md])):
+                p = "docs/images/" + img
+                if SAFE_NAME_RE.match(img) and p in files and img not in used_imgs:
+                    changes[p] = None
+                    deleted.append(p)
+        changes[MD_DIR + md] = None
+        deleted.append(MD_DIR + md)
+    if with_assets:
+        for l in target.get("links") or []:
+            if isinstance(l, dict) and l.get("type") == "download":
+                name = str(l.get("uri", "")).replace(FILES_DIR, "", 1)
+                if SAFE_NAME_RE.match(name) and FILES_DIR + name in files and name not in used_files and FILES_DIR + name not in changes:
+                    changes[FILES_DIR + name] = None
+                    deleted.append(FILES_DIR + name)
+    return changes, deleted, target.get("title") or eid
+
+
 def create_post(gh, kind):
     cfg = KINDS[kind]
     commit_sha, base_tree, files = gh.head()
@@ -295,6 +384,26 @@ def create_post(gh, kind):
     return gh, commit_sha, base_tree, changes, f"Aggiunge {kind}: {pid}", summary, cfg["page"].format(id=pid)
 
 
+def delete_cli(gh):
+    kind = {"1": "articolo", "2": "comunicazione", "3": "evento"}[ask("Cosa elimini? 1 = articolo, 2 = comunicazione, 3 = evento",
+            validate=lambda v: None if v in ("1", "2", "3") else "scrivi 1, 2 o 3")]
+    commit_sha, base_tree, files = gh.head()
+    items = list_items(gh, files)[kind]
+    if not items:
+        raise Abort("Non ci sono contenuti di questo tipo")
+    print("\nEsistenti:")
+    for it in items:
+        print(f"  - {it['id']}  ({it.get('date')})  {it.get('title')}")
+    eid = ask("ID da eliminare")
+    with_assets = kind != "evento" and yes("Eliminare anche immagini e file allegati non usati altrove?", False)
+    changes, deleted, title = plan_delete(gh, files, kind, eid, with_assets)
+    summary = [f"ELIMINA {kind} «{title}» ({eid})"] + [f"  - {p}" for p in deleted] + [f"  ~ {p}" for p, c in changes.items() if c is not None]
+    print("\nL'eliminazione è recuperabile solo dalla cronologia di git.")
+    if ask(f'Per confermare scrivi l\'ID "{eid}"') != eid:
+        raise Abort("ID non corrispondente: annullato")
+    return gh, commit_sha, base_tree, changes, f"Elimina {kind}: {eid}", summary, None
+
+
 def create_event(gh):
     commit_sha, base_tree, files = gh.head()
     entries = load_json_list(gh, files, EVENTS_JSON)
@@ -333,7 +442,7 @@ def main():
     print(f"✔ Connesso a {args.repo} ({args.branch})")
 
     while True:
-        print("\nCosa vuoi creare?\n  1) Articolo\n  2) Comunicazione\n  3) Evento del calendario\n  q) Esci")
+        print("\nCosa vuoi creare?\n  1) Articolo\n  2) Comunicazione\n  3) Evento del calendario\n  4) Elimina per ID (articolo / comunicazione / evento)\n  q) Esci")
         choice = input("> ").strip().lower()
         if choice in ("q", ""):
             break
@@ -344,6 +453,8 @@ def main():
                 job = create_post(gh, "comunicazione")
             elif choice == "3":
                 job = create_event(gh)
+            elif choice == "4":
+                job = delete_cli(gh)
             else:
                 continue
             gh, parent, base_tree, changes, message, summary, page = job

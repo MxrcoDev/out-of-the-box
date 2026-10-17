@@ -82,15 +82,39 @@ def need_gh():
 def api_state(_d):
     gh = need_gh()
     _, _, files = gh.head()
-    ids = {}
-    for kind, cfg in core.KINDS.items():
-        ids[kind] = [e.get("id") for e in core.load_json_list(gh, files, cfg["json"]) if isinstance(e, dict)]
-    ids["evento"] = [str(e.get("id")) for e in core.load_json_list(gh, files, core.EVENTS_JSON) if isinstance(e, dict)]
+    items = core.list_items(gh, files)
     return {
-        "ids": ids,
+        "ids": {k: [i["id"] for i in v] for k, v in items.items()},
+        "items": items,
         "images": sorted(p[len(IMAGES_DIR):] for p in files if p.startswith(IMAGES_DIR) and p != IMAGES_DIR + ".gitkeep"),
         "files": sorted(p[len(core.FILES_DIR):] for p in files if p.startswith(core.FILES_DIR) and not p.endswith(".gitkeep")),
     }
+
+
+def delete_args(d):
+    kind, eid = d.get("kind"), d.get("id")
+    if kind not in ("articolo", "comunicazione", "evento") or not isinstance(eid, str) or not eid.strip():
+        raise core.Abort("Scegli il tipo e indica l'ID da eliminare")
+    return kind, eid.strip(), bool(d.get("assets")) and kind != "evento"
+
+
+def api_delete_preview(d):
+    gh = need_gh()
+    kind, eid, assets = delete_args(d)
+    _, _, files = gh.head()
+    _, deleted, title = core.plan_delete(gh, files, kind, eid, assets)
+    return {"title": title, "deleted": deleted}
+
+
+def api_delete(d):
+    gh = need_gh()
+    kind, eid, assets = delete_args(d)
+    if d.get("confirm") != eid:
+        raise core.Abort("Conferma non corrispondente all'ID: nulla è stato eliminato")
+    parent, base_tree, files = gh.head()
+    changes, deleted, title = core.plan_delete(gh, files, kind, eid, assets)
+    sha = gh.commit(parent, base_tree, changes, f"Elimina {kind}: {eid}")
+    return {"sha": sha, "deleted": deleted, "title": title}
 
 
 def clean_str(d, key, required=True, maxlen=500):
@@ -216,7 +240,8 @@ def api_publish(d):
     return {"sha": sha, "page": page, "files": list(changes)}
 
 
-ROUTES = {"/api/login": api_login, "/api/state": api_state, "/api/publish": api_publish}
+ROUTES = {"/api/login": api_login, "/api/state": api_state, "/api/publish": api_publish,
+          "/api/delete_preview": api_delete_preview, "/api/delete": api_delete}
 
 
 # ───────────────────────── server ─────────────────────────
@@ -398,6 +423,7 @@ dialog .acts{display:flex;gap:10px;justify-content:flex-end}
     <button type="button" role="tab" data-kind="articolo" aria-selected="true">Articolo</button>
     <button type="button" role="tab" data-kind="comunicazione" aria-selected="false">Comunicazione</button>
     <button type="button" role="tab" data-kind="evento" aria-selected="false">Evento calendario</button>
+    <button type="button" role="tab" data-kind="elimina" aria-selected="false">Elimina</button>
   </div>
 
   <form id="postForm" novalidate>
@@ -466,6 +492,21 @@ dialog .acts{display:flex;gap:10px;justify-content:flex-end}
       <div style="margin-top:14px"><label for="e-desc">Descrizione</label><textarea id="e-desc" rows="3" maxlength="1000"></textarea></div>
     </div>
     <div class="actions"><button type="submit" id="evBtn">Pubblica su GitHub</button></div>
+  </form>
+
+  <form id="delForm" hidden novalidate>
+    <h2>Elimina contenuto</h2>
+    <div class="card">
+      <div class="grid">
+        <div><label for="d-kind">Cosa elimini</label><select id="d-kind"><option value="articolo">Articolo</option><option value="comunicazione">Comunicazione</option><option value="evento">Evento calendario</option></select></div>
+        <div><label for="d-id">ID <span class="req">*</span></label><input id="d-id" list="d-list" autocomplete="off" spellcheck="false"><datalist id="d-list"></datalist><p class="hint" id="d-info"></p></div>
+      </div>
+      <p style="margin:14px 0 0"><label style="display:flex;gap:8px;align-items:center;text-transform:none;font:inherit;font-weight:600"><input type="checkbox" id="d-assets" style="width:auto"> Elimina anche immagini e file allegati non usati da altri contenuti</label></p>
+      <div style="margin-top:14px"><button type="button" id="d-check">Verifica cosa verrà eliminato</button></div>
+      <div id="d-preview" class="card" style="margin:16px 0 0" hidden></div>
+    </div>
+    <p class="hint" style="margin:0 0 14px">L'eliminazione richiede di riscrivere l'ID per conferma. Il contenuto resta comunque recuperabile dalla cronologia di git.</p>
+    <div class="actions"><button type="submit" id="d-go" disabled>Elimina definitivamente</button></div>
   </form>
 </main>
 </div>
@@ -641,7 +682,7 @@ $('fImg').addEventListener('submit', async e => {
 /* ---------- bozza automatica (solo testo, nel browser) ---------- */
 function draftKey() { return 'ootb.draft.' + state.kind; }
 function saveDraft() {
-  if (state.kind === 'evento') return;
+  if (state.kind !== 'articolo' && state.kind !== 'comunicazione') return;
   store.set(draftKey(), JSON.stringify({ t: $('f-title').value, i: $('f-id').value, s: $('f-subtitle').value, d: $('f-date').value, b: ta().value }));
   $('draftInfo').textContent = 'Bozza salvata in questo browser';
 }
@@ -704,8 +745,9 @@ $('addLink').onclick = () => { state.links.push({ type: 'redirect', uri: '', lab
 function setKind(k) {
   state.kind = k;
   document.querySelectorAll('.tabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.kind === k)));
-  $('postForm').hidden = k === 'evento'; $('evForm').hidden = k !== 'evento';
-  if (k !== 'evento') { $('postTitle').textContent = k === 'articolo' ? 'Nuovo articolo' : 'Nuova comunicazione'; loadDraft(); }
+  $('postForm').hidden = k === 'evento' || k === 'elimina'; $('evForm').hidden = k !== 'evento'; $('delForm').hidden = k !== 'elimina';
+  if (k === 'elimina') fillDelList();
+  if (k === 'articolo' || k === 'comunicazione') { $('postTitle').textContent = k === 'articolo' ? 'Nuovo articolo' : 'Nuova comunicazione'; loadDraft(); }
   status('');
 }
 document.querySelector('.tabs').addEventListener('click', e => { const b = e.target.closest('button[data-kind]'); if (b) setKind(b.dataset.kind); });
@@ -713,7 +755,7 @@ $('vWrite').onclick = () => $('split').dataset.view = 'write';
 $('vPrev').onclick = () => { updatePreview(); $('split').dataset.view = 'preview'; };
 
 /* ---------- accesso ---------- */
-async function refreshState() { const s = await api('/api/state'); state.ids = s.ids; state.images = s.images; state.files = s.files; checkId(); }
+async function refreshState() { const s = await api('/api/state'); state.ids = s.ids; state.items = s.items; state.images = s.images; state.files = s.files; checkId(); }
 $('loginForm').addEventListener('submit', async e => {
   e.preventDefault(); const btn = $('loginBtn'); btn.disabled = true; status('Connessione a GitHub…');
   try {
@@ -767,6 +809,40 @@ $('evForm').addEventListener('submit', async e => {
   } catch (err) { status(err.message, 'err'); } finally { btn.disabled = false; }
 });
 $('e-date').value = today();
+
+/* ---------- eliminazione ---------- */
+function fillDelList() {
+  const items = (state.items || {})[$('d-kind').value] || [];
+  $('d-list').replaceChildren(...items.map(i => { const o = document.createElement('option'); o.value = i.id; o.label = `${i.title || ''} (${i.date || ''})`; return o; }));
+  $('d-info').textContent = items.length ? `${items.length} presenti: scegli un ID dall’elenco.` : 'Non ci sono contenuti di questo tipo.';
+  resetDel();
+}
+function resetDel() { $('d-preview').hidden = true; $('d-go').disabled = true; }
+['d-kind', 'd-id', 'd-assets'].forEach(i => $(i).addEventListener(i === 'd-kind' ? 'change' : 'input', () => { if (i === 'd-kind') fillDelList(); else resetDel(); }));
+$('d-check').onclick = async () => {
+  const id = $('d-id').value.trim(); if (!id) { status('Indica l’ID da eliminare.', 'err'); return; }
+  try {
+    const r = await api('/api/delete_preview', { kind: $('d-kind').value, id, assets: $('d-assets').checked });
+    const box = $('d-preview'); box.replaceChildren();
+    const h = document.createElement('p'); h.style.fontWeight = '700'; h.textContent = `Verrà eliminato «${r.title}» (${id}):`; box.append(h);
+    const ul = document.createElement('ul');
+    const add = t => { const li = document.createElement('li'); li.textContent = t; ul.append(li); };
+    add('la voce nell’elenco dei contenuti (JSON)'); r.deleted.forEach(add); box.append(ul);
+    box.hidden = false; $('d-go').disabled = false; status('');
+  } catch (err) { resetDel(); status(err.message, 'err'); }
+};
+$('delForm').addEventListener('submit', async e => {
+  e.preventDefault(); const id = $('d-id').value.trim(), btn = $('d-go');
+  const typed = prompt(`Per confermare l’eliminazione scrivi l’ID:\n${id}`);
+  if (typed === null) return;
+  if (typed.trim() !== id) { status('ID non corrispondente: nulla è stato eliminato.', 'err'); return; }
+  btn.disabled = true; status('Eliminazione in corso…');
+  try {
+    const r = await api('/api/delete', { kind: $('d-kind').value, id, assets: $('d-assets').checked, confirm: typed.trim() });
+    status(`✔ Eliminato «${r.title}» (commit ${r.sha.slice(0, 7)}). Sparirà dal sito tra circa un minuto.`, 'ok');
+    $('d-id').value = ''; await refreshState(); fillDelList();
+  } catch (err) { status(err.message, 'err'); btn.disabled = false; }
+});
 })();
 </script>
 </body>
