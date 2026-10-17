@@ -29,7 +29,12 @@ import urllib.request
 
 DEFAULT_REPO = "MxrcoDev/out-of-the-box"
 DEFAULT_BRANCH = "main"
-API = os.environ.get("OOTB_API_URL", "https://api.github.com").rstrip("/")
+API = "https://api.github.com"
+# L'indirizzo dell'API si può cambiare solo verso un server locale (usato per i test): così una variabile
+# d'ambiente manomessa non può dirottare il token verso un server esterno.
+_override = os.environ.get("OOTB_API_URL", "")
+if re.match(r"^http://(127\.0\.0\.1|localhost)(:\d+)?$", _override):
+    API = _override
 
 ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]*$")
 SCHEME_RE = re.compile(r"^[a-z][a-z0-9+.-]*:", re.I)
