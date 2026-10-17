@@ -63,4 +63,10 @@ Se i dati sono errati lo script elenca i problemi e non scrive nulla (il workflo
 Impostazioni GitHub: Settings → Actions → General → Workflow permissions = *Read and write*; Pages servite dal branch `main`, cartella `/ (root)`.
 
 ## Pagine nascoste
-Al momento *Fatti sentire*, *Bacheca studenti* e *Showcase* sono nascoste: tolte dai menu e, se aperte da URL, reindirizzano alla home (`noindex` + `meta refresh` in cima ai tre file in `src/html`). Il generatore ha `HIDDEN` in `build-pages.mjs` per menu e pulsante "indietro" delle pagine generate. Per riattivarle: elimina le due righe nei tre file, rimetti le voci nei menu e svuota `HIDDEN`.
+*Fatti sentire*, *Bacheca studenti* e *Showcase* sono nascoste: i tre file in `src/html` sono solo un reindirizzamento alla home e i loro contenuti (html, js, css) sono stati rimossi dal sito, quindi non sono più consultabili nemmeno da URL diretto. Il generatore usa `HIDDEN` in `build-pages.mjs` per menu e pulsante "indietro" delle pagine generate.
+
+Per riattivarle: recupera i file dalla versione precedente (commit `af0988f`):
+```
+git checkout af0988f -- src/html src/js/bacheca.js src/js/showcase.js src/js/fattisentire.js src/css/bacheca.css src/css/showcase.css src/css/fattisentire.css
+```
+poi rimetti le voci nei menu di `index.html` e `src/html/proposte.html` e svuota `HIDDEN`.
