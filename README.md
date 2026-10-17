@@ -70,3 +70,10 @@ Per riattivarle: recupera i file dalla versione precedente (commit `af0988f`):
 git checkout af0988f -- src/html src/js/bacheca.js src/js/showcase.js src/js/fattisentire.js src/css/bacheca.css src/css/showcase.css src/css/fattisentire.css
 ```
 poi rimetti le voci nei menu di `index.html` e `src/html/proposte.html` e svuota `HIDDEN`.
+
+## Pubblicare da remoto (`tools/ootb_publisher.py`)
+Programma Python (solo libreria standard, nessun git) per creare articoli, comunicazioni ed eventi del calendario da qualsiasi dispositivo:
+```
+python3 tools/ootb_publisher.py
+```
+Chiede il token GitHub (input nascosto, mai salvato; in alternativa variabile `GITHUB_TOKEN`), poi guida l'inserimento dei campi, carica markdown e file da scaricare e fa un unico commit su `main`. Il workflow genera la pagina HTML. Token: fine-grained con *Contents: Read and write* su questo repository, oppure classico con scope `repo`.
