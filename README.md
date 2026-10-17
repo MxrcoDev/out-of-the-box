@@ -61,3 +61,6 @@ node build-pages.mjs [--force]
 Se i dati sono errati lo script elenca i problemi e non scrive nulla (il workflow fallisce).
 
 Impostazioni GitHub: Settings → Actions → General → Workflow permissions = *Read and write*; Pages servite dal branch `main`, cartella `/ (root)`.
+
+## Pagine nascoste
+Al momento *Fatti sentire*, *Bacheca studenti* e *Showcase* sono nascoste: tolte dai menu e, se aperte da URL, reindirizzano alla home (`noindex` + `meta refresh` in cima ai tre file in `src/html`). Il generatore ha `HIDDEN` in `build-pages.mjs` per menu e pulsante "indietro" delle pagine generate. Per riattivarle: elimina le due righe nei tre file, rimetti le voci nei menu e svuota `HIDDEN`.

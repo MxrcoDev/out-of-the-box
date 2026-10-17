@@ -58,6 +58,9 @@ const KINDS = [
   },
 ];
 
+// Pagine temporaneamente nascoste: tolte dal menu, e il pulsante "indietro" porta alla home. Svuota il Set per riattivarle.
+const HIDDEN = new Set(['fattisentire.html', 'bacheca.html', 'showcase.html']);
+
 const NAV = [
   ['../../index.html', 'Home', null],
   ['../../src/html/proposte.html', 'Proposte', 'proposte.html'],
@@ -229,7 +232,7 @@ function renderPage(kind, it, bodyHtml) {
   const desc = it.subtitle || it.title;
   const url = BASE ? `${BASE}/${kind.outDir}/${it.id}.html` : '';
   const img = BASE ? `${BASE}/src/img/thumbnail.png` : '';
-  const nav = NAV.map(([href, label, key]) => `    <a href="${href}"${key === kind.nav ? ' aria-current="page"' : ''}>${label}</a>`).join('\n');
+  const nav = NAV.filter(([, , key]) => !HIDDEN.has(key)).map(([href, label, key]) => `    <a href="${href}"${key === kind.nav ? ' aria-current="page"' : ''}>${label}</a>`).join('\n');
   return `<!DOCTYPE html>
 <html lang="it">
 <head>
@@ -273,7 +276,7 @@ ${nav}
     <div class="article-body">
 ${bodyHtml.trim()}
     </div>${renderLinks(it.links)}
-    <a class="btn back" href="${kind.backHref}">&larr; ${kind.backLabel}</a>
+    <a class="btn back" href="${HIDDEN.has(kind.nav) ? '../../index.html' : kind.backHref}">&larr; ${HIDDEN.has(kind.nav) ? 'Torna alla home' : kind.backLabel}</a>
   </article>
 </main>
 

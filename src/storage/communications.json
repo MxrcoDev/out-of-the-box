@@ -7,8 +7,7 @@
     "date": "2026-10-17",
     "content": "welcome.md",
     "links": [
-      { "type": "redirect", "uri": "https://www.instagram.com/outofthebox_volterra/", "label": "Instagram" },
-      { "type": "redirect", "uri": "src/html/fattisentire.html", "label": "Fatti sentire" }
+      { "type": "redirect", "uri": "https://www.instagram.com/outofthebox_volterra/", "label": "Instagram" }
     ]
   }
 ]
