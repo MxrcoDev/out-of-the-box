@@ -1,0 +1,13 @@
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:clamp(16px,2.5vw,32px)}
+.card{display:flex;flex-direction:column;border:4px solid var(--k);background:var(--w);box-shadow:8px 8px 0 var(--k)}
+.card figure{aspect-ratio:16/10;background:#B9B6B0;border-bottom:4px solid var(--k);overflow:hidden}
+.card img{width:100%;height:100%;object-fit:cover;display:block}
+.card-body{display:flex;flex-direction:column;gap:10px;padding:16px 16px 18px;flex:1}
+.card h2{font:400 clamp(2rem,3vw,2.8rem)/.95 var(--d);text-transform:uppercase;overflow-wrap:anywhere}
+.card-meta{display:flex;flex-wrap:wrap;gap:4px 14px;font:700 1.15rem/1.1 var(--t);text-transform:uppercase}
+.card-meta .by{background:var(--k);color:var(--w);padding:3px 8px 1px}
+.card-meta time{color:var(--r)}
+.card p.d{font-size:1.3rem;font-weight:500;line-height:1.15;overflow-wrap:anywhere}
+.card .btn{margin-top:auto;align-self:flex-start;font-size:1.2rem;padding:10px 14px 6px;box-shadow:4px 4px 0 var(--k)}
+.card .btn:hover{transform:translate(4px,4px)}
+@media(max-width:380px){.card{box-shadow:5px 5px 0 var(--k)}}
