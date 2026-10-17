@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "id": "welcome",
+    "title": "Benvenuto in Out of the Box",
+    "subtitle": "Fuori dagli schemi. Dentro il cambiamento.",
+    "author": "Lista Out of the Box",
+    "date": "2026-10-17",
+    "content": "welcome.md",
+    "links": [
+      { "type": "redirect", "uri": "https://www.instagram.com/outofthebox_volterra/", "label": "Instagram" },
+      { "type": "redirect", "uri": "src/html/fattisentire.html", "label": "Fatti sentire" }
+    ]
+  }
+]
