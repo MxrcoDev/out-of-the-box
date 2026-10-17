@@ -59,7 +59,7 @@ const KINDS = [
 ];
 
 // Pagine temporaneamente nascoste: tolte dal menu, e il pulsante "indietro" porta alla home. Svuota il Set per riattivarle.
-const HIDDEN = new Set([]);
+const HIDDEN = new Set(['fattisentire.html', 'bacheca.html', 'showcase.html']);
 
 const NAV = [
   ['../../index.html', 'Home', null],

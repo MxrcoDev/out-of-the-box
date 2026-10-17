@@ -63,12 +63,13 @@ Se i dati sono errati lo script elenca i problemi e non scrive nulla (il workflo
 Impostazioni GitHub: Settings → Actions → General → Workflow permissions = *Read and write*; Pages servite dal branch `main`, cartella `/ (root)`.
 
 ## Nascondere / riattivare pagine
-Tutte le pagine sono attive. Per nascondere temporaneamente *Fatti sentire*, *Bacheca studenti* e *Showcase* c'è la versione già pronta nel commit `476b346` (menu senza le tre voci, tre file in `src/html` ridotti a un reindirizzamento alla home, contenuti rimossi). Per nasconderle di nuovo:
+*Fatti sentire*, *Bacheca studenti* e *Showcase* sono **nascoste**: fuori dai menu, e i tre file in `src/html` sono solo un reindirizzamento alla home (html, js e css rimossi). Il generatore usa `HIDDEN` in `.github/scripts/build-pages.mjs` per menu e pulsante "indietro" delle pagine generate.
+
+Per riattivarle (versione completa nel commit `5b78875`; non toccare i JSON e i markdown dei contenuti):
 ```
-git checkout 476b346 -- index.html src/html
-git rm src/js/bacheca.js src/js/showcase.js src/js/fattisentire.js src/css/bacheca.css src/css/showcase.css src/css/fattisentire.css
+git checkout 5b78875 -- index.html src/html src/js/bacheca.js src/js/showcase.js src/js/fattisentire.js src/css/bacheca.css src/css/showcase.css src/css/fattisentire.css
 ```
-poi in `.github/scripts/build-pages.mjs` imposta `HIDDEN = new Set(['fattisentire.html','bacheca.html','showcase.html'])` e rigenera le pagine con *force*.
+poi svuota `HIDDEN` (`new Set([])`) e rigenera le pagine con *force* (Actions → Run workflow, oppure `node .github/scripts/build-pages.mjs --force`).
 
 ## Pubblicare da remoto con editor grafico (`tools/ootb_publisher_gui.py`)
 ```
