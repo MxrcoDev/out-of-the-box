@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "id": "welcome-to-ootb",
+    "title": "Welcome to OOTB",
+    "subtitle": "Benvenuto sul nostro sito",
+    "author": "OOTB",
+    "date": "2026-10-17",
+    "content": "welcome-to-ootb.md",
+    "links": [
+      {
+        "type": "download",
+        "uri": "MANIFESTO.pdf",
+        "label": "Manifesto OOTB"
+      }
+    ]
+  }
+]
