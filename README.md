@@ -71,7 +71,13 @@ git checkout af0988f -- src/html src/js/bacheca.js src/js/showcase.js src/js/fat
 ```
 poi rimetti le voci nei menu di `index.html` e `src/html/proposte.html` e svuota `HIDDEN`.
 
-## Pubblicare da remoto (`tools/ootb_publisher.py`)
+## Pubblicare da remoto con editor grafico (`tools/ootb_publisher_gui.py`)
+```
+python3 tools/ootb_publisher_gui.py
+```
+Apre nel browser (solo sul tuo dispositivo, 127.0.0.1) un editor con barra degli strumenti (titoli, grassetto, corsivo, elenchi, citazioni, link, immagini, codice), anteprima in tempo reale, upload di immagini (`docs/images/`) e file (`docs/files/`), bozza automatica e pubblicazione con un clic. Il token GitHub si inserisce nella pagina e non viene salvato. Serve `ootb_publisher.py` nella stessa cartella.
+
+### Versione da terminale (`tools/ootb_publisher.py`)
 Programma Python (solo libreria standard, nessun git) per creare articoli, comunicazioni ed eventi del calendario da qualsiasi dispositivo:
 ```
 python3 tools/ootb_publisher.py
