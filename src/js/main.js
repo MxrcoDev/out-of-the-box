@@ -56,7 +56,7 @@
   addEventListener('orientationchange', refit);
   addEventListener('load', fit);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
-  matchMedia('(min-width: 701px)').addEventListener('change', e => { if (e.matches) setMenu(false); });
+  matchMedia('(min-width: 900px)').addEventListener('change', e => { if (e.matches) setMenu(false); });
 
   // su touch non esiste l'hover: la riga al centro dello schermo si accende
   if (matchMedia('(hover: none)').matches && 'IntersectionObserver' in window && !reduce) {
@@ -64,4 +64,30 @@
       { rootMargin: '-42% 0px -42% 0px' });
     document.querySelectorAll('.row').forEach(r => ro.observe(r));
   }
+  // utilità condivise dalle pagine interne (bacheca, showcase)
+  // I percorsi nei JSON sono relativi alla radice del sito; <body data-root> indica dove si trova la radice.
+  const root = new URL(document.body.dataset.root || './', location.href);
+  window.OOTB = {
+    root,
+    async fetchJSON(path) {
+      const r = await fetch(new URL(path, root), { cache: 'no-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status + ' su ' + path);
+      return r.json();
+    },
+    // restituisce un URL http(s) assoluto oppure null (blocca javascript:, data:, ecc.)
+    url(path) {
+      if (typeof path !== 'string' || !path.trim()) return null;
+      try { const u = new URL(path.trim(), root); return /^https?:$/.test(u.protocol) ? u.href : null; } catch { return null; }
+    },
+    // crea elementi DOM senza innerHTML: i testi passano sempre da textContent
+    el(tag, attrs = {}, ...kids) {
+      const n = document.createElement(tag);
+      for (const [k, v] of Object.entries(attrs)) {
+        if (v == null || v === false) continue;
+        if (k === 'text') n.textContent = v; else if (k === 'class') n.className = v; else n.setAttribute(k, v === true ? '' : v);
+      }
+      kids.flat().forEach(c => { if (c != null) n.append(c); });
+      return n;
+    }
+  };
 })();

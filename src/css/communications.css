@@ -1,0 +1,34 @@
+/* Stile condiviso delle pagine di dettaglio delle comunicazioni (communications/communication_N/index.html). */
+.article{max-width:760px;display:grid;gap:22px;user-select:text;-webkit-user-select:text}
+.article h1{font:400 clamp(3rem,9vw,7rem)/.9 var(--d);text-transform:uppercase;overflow-wrap:anywhere}
+.article h2{font:400 clamp(2rem,4vw,3rem)/1 var(--d);text-transform:uppercase;margin-top:12px}
+.article p,.article li{font-size:1.45rem;font-weight:500;line-height:1.2}
+.article ul,.article ol{margin-left:1.3em;display:grid;gap:6px}
+.article a:not(.btn){text-decoration:underline;text-decoration-color:var(--r);text-decoration-thickness:3px;text-underline-offset:3px}
+.article-meta{display:flex;flex-wrap:wrap;gap:4px 14px;font:700 1.2rem/1.1 var(--t);text-transform:uppercase}
+.article-meta .by{background:var(--k);color:var(--w);padding:3px 8px 1px}
+.article-meta time{color:var(--r)}
+.article figure img{width:100%;height:auto;display:block;border:4px solid var(--k)}
+.article figcaption{font-size:1.1rem;font-weight:600;margin-top:6px}
+.article pre{background:var(--k);color:var(--w);padding:16px;overflow-x:auto;font:500 1rem/1.4 ui-monospace,Menlo,Consolas,monospace;border-left:8px solid var(--r);user-select:text}
+.article code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em}
+.downloads{border:4px solid var(--k);padding:18px;display:grid;gap:12px;box-shadow:6px 6px 0 var(--k)}
+.downloads ul{list-style:none;margin:0}
+.downloads .btn{margin-top:0;font-size:1.2rem;padding:10px 14px 6px;box-shadow:4px 4px 0 var(--k)}
+.downloads .btn:hover{transform:translate(4px,4px)}
+.back{justify-self:start}
+.article .subtitle{font:600 clamp(1.4rem,2.2vw,2rem)/1.1 var(--t);max-width:52ch}
+.article-body{display:grid;gap:22px;min-width:0}
+.article-body>*{min-width:0}
+.article h3{font:400 clamp(1.6rem,3vw,2.2rem)/1 var(--d);text-transform:uppercase;margin-top:8px}
+.article h4,.article h5,.article h6{font:700 1.6rem/1 var(--t);text-transform:uppercase}
+.article blockquote{border-left:8px solid var(--r);padding:4px 0 4px 18px;font-weight:600}
+.article hr{border:0;border-top:4px solid var(--k)}
+.article table{border-collapse:collapse;display:block;overflow-x:auto}
+.article th,.article td{border:3px solid var(--k);padding:8px 12px;text-align:left;font-size:1.2rem}
+.article :not(pre)>code{background:#EDEBE6;padding:1px 5px}
+.article pre code{font-size:inherit}
+.downloads h2{margin-top:0}
+.downloads li{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px}
+.downloads .file-info{font:700 1.1rem/1 var(--t);text-transform:uppercase;opacity:.7}
+.downloads.links-download{border-color:var(--r);box-shadow:6px 6px 0 var(--r)}

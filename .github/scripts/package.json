@@ -1,0 +1,8 @@
+{
+  "name": "ootb-build-pages",
+  "private": true,
+  "type": "module",
+  "description": "Genera le pagine HTML di articoli e comunicazioni a partire dai JSON in src/storage",
+  "scripts": { "build": "node build-pages.mjs", "build:force": "node build-pages.mjs --force", "test": "node --test" },
+  "dependencies": { "marked": "^15.0.0" }
+}

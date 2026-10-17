@@ -1,0 +1,55 @@
+name: Genera pagine articoli e comunicazioni
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/storage/articles.json'
+      - 'src/storage/communications.json'
+      - 'docs/markdown/**'
+      - 'docs/files/**'
+      - '.github/scripts/**'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Rigenera anche le pagine già esistenti'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: .github/scripts/package-lock.json
+
+      - name: Installa dipendenze
+        run: npm ci
+        working-directory: .github/scripts
+
+      - name: Genera le pagine HTML
+        run: node .github/scripts/build-pages.mjs ${{ inputs.force && '--force' || '' }}
+
+      - name: Commit delle pagine generate
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/articles docs/communications
+          if git diff --cached --quiet; then
+            echo "Nessuna novità da pubblicare."
+          else
+            git commit -m "chore: genera pagine articoli e comunicazioni [skip ci]"
+            git push
+          fi

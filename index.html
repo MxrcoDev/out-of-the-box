@@ -11,7 +11,7 @@
 <meta property="og:title" content="OUT OF THE BOX — La lista">
 <meta property="og:description" content="Non siamo qui per fare numero. Siamo qui per cambiare le regole. Scopri il progetto OUT OF THE BOX e le nostre proposte per la scuola.">
 <meta property="og:url" content="https://ootb-lista.it/">
-<meta property="og:image" content="https://ootb-lista.it/img/thumbnail.png">
+<meta property="og:image" content="https://ootb-lista.it/src/img/thumbnail.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="OUT OF THE BOX — Cambia le regole">
@@ -20,30 +20,33 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="OUT OF THE BOX — La lista">
 <meta name="twitter:description" content="Non siamo qui per fare numero. Siamo qui per cambiare le regole.">
-<meta name="twitter:image" content="https://ootb-lista.it/img/thumbnail.png">
+<meta name="twitter:image" content="https://ootb-lista.it/src/img/thumbnail.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Teko:wght@500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
-<script src="js/main.js" defer></script>
-<link rel="icon" type="image/png" href="img/icon.png">
+<link rel="stylesheet" href="src/css/style.css">
+<script src="src/js/main.js" defer></script>
+<link rel="icon" type="image/png" href="src/img/icon.png">
 </head>
 <body>
 <div class="grain" aria-hidden="true"></div>
+<a class="skip" href="#main">Vai al contenuto</a>
 
 <header class="bar" id="top">
   <a class="logo" href="#top" aria-label="OUT OF THE BOX, torna in alto"><span>OO</span><span>TB</span></a>
   <p class="bar-claim">Fuori dagli schemi.<br>Dentro il cambiamento.</p>
   <button class="burger" aria-expanded="false" aria-controls="menu" aria-label="Apri il menu"><i></i><i></i><i></i></button>
   <nav class="menu" id="menu" aria-label="Principale">
-    <a href="#punti">Chi siamo</a>
-    <a href="#presto">Coming soon</a>
-    <a href="#vota" class="menu-vote">Vota</a>
+    <a href="index.html" aria-current="page">Home</a>
+    <a href="src/html/proposte.html">Proposte</a>
+    <a href="src/html/fattisentire.html">Fatti sentire</a>
+    <a href="src/html/bacheca.html">Bacheca studenti</a>
+    <a href="src/html/showcase.html">Showcase</a>
   </nav>
 </header>
 
-<main>
+<main id="main">
 <section class="hero">
   <p class="hero-tag"><b>Lista studentesca</b><span>2026 / 2027</span></p>
   <h1 class="mega" data-fit aria-label="Out of the box">
@@ -52,7 +55,7 @@
     <span class="ln red"><span>BOX</span></span>
   </h1>
   <figure class="helmet" aria-hidden="true">
-    <img src="img/casco.png" alt="" width="555" height="1128">
+    <img src="src/img/casco.png" alt="" width="555" height="1128">
     <i class="glitch g1"></i><i class="glitch g2"></i><i class="glitch g3"></i>
   </figure>
   <div class="hero-foot">
@@ -78,15 +81,19 @@
   </ul>
 </section>
 
-<section class="soon" id="presto">
+<section class="soon reps" id="rappresentanti" aria-labelledby="reps-title">
   <div class="soon-in">
-    <h2 class="title rv" data-fit>Coming<br>soon</h2>
+    <h2 class="title rv" id="reps-title" data-fit>I nostri<br>rappresentanti</h2>
     <div class="soon-side rv">
-      <p>Le proposte arrivano presto.<br>Torna a trovarci: la lista si sta preparando.</p>
-      <div class="redact" aria-hidden="true"><i></i><i></i><i></i></div>
-      <p class="stamp">Contenuti in arrivo</p>
+      <p>Quattro studenti, una lista. Sono i volti a cui portare idee, problemi e proposte: ascoltano, raccolgono e si fanno sentire per te.</p>
     </div>
   </div>
+  <ul class="reps-list">
+    <li class="rep rv"><h3><span>Marco</span> <span>Gavioli</span></h3><p class="cls"><span class="sr-only">Classe </span>5D</p></li>
+    <li class="rep rv"><h3><span>Pietro</span> <span>Guiotto</span></h3><p class="cls"><span class="sr-only">Classe </span>5I</p></li>
+    <li class="rep rv"><h3><span>Alessandro</span> <span>Boccalon</span></h3><p class="cls"><span class="sr-only">Classe </span>5I</p></li>
+    <li class="rep rv"><h3><span>Carlo</span> <span>Masiero</span></h3><p class="cls"><span class="sr-only">Classe </span>5M</p></li>
+  </ul>
 </section>
 
 <section class="vota" id="vota">
